@@ -2,14 +2,25 @@
 #include "raymath.h"
 
 
-Collectible::Collectible(Vector3 pos) {
+Collectible::Collectible(Vector3 pos, const char* modelPath) {
     position = pos;
     collected = false;
+
+    model = LoadModel(modelPath);
+
+    texture = LoadTexture("assets/models/image0.jpg");
+    model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
+
+}
+
+Collectible::~Collectible() {
+    UnloadModel(model);
+    UnloadTexture(texture);
 }
 
 void Collectible::draw() {
     if (!collected) {
-        DrawCube(position, 1.0f, 1.0f, 1.0f, GOLD);
+        DrawModel(model, position, 1.0f, WHITE);
     }
 }
 

@@ -8,7 +8,7 @@ class Collectible
 {
 
 public:
-	Collectible(Vector3 position);
+	Collectible(Vector3 position, const char* modelPath);
 	~Collectible();
 
 	void draw();
@@ -16,6 +16,8 @@ public:
 	
 	Vector3 position;
 	bool collected;
+	Model model;
+	Texture2D texture;
 
 private:
 

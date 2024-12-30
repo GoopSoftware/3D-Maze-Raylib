@@ -135,6 +135,17 @@
     <ClInclude Include="Collectible.h" />
     <ClInclude Include="Maze.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\models\Joesama.mtl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\models\Joesama.obj">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\models\image0.jpg" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

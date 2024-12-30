@@ -45,7 +45,7 @@ int main() {
 
 	while (!WindowShouldClose()) {
 		
-		camera.position.y = .6f;
+		//camera.position.y = .6f;
 
 		Vector2 mouseDelta = GetMouseDelta();
 		yaw -= mouseDelta.x * mouseSensitivity;
@@ -123,6 +123,11 @@ int main() {
 				camera.target = Vector3Subtract(camera.target, Vector3Scale(right, moveSpeed));
 			}
 			
+		}
+
+		if (maze.collectible != nullptr && maze.collectible->checkCollision(camera.position)) {
+			std::cout << "You collected the item! You win!" << std::endl;
+			// Handle win condition (e.g., stop the game or display a victory message)
 		}
 
 

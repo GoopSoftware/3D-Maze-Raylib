@@ -8,12 +8,14 @@
 
 
 Maze::Maze() {
-	maze.resize(mazeWidth, std::vector<int>(mazeHeight, 1));  // Fill with walls (1)
-
+	maze.resize(mazeWidth, std::vector<int>(mazeHeight, 1)); 
+	collectible = nullptr;
 }
 
 Maze::~Maze() {
-
+	if (collectible != nullptr) {
+		delete collectible;
+	}
 }
 
 void Maze::initMaze() {
@@ -44,6 +46,15 @@ void Maze::generateMaze(int x, int y) {
 			generateMaze(nx, ny);
 		}
 	}
+
+	int cx, cy;
+	do {
+		cx = rand() % mazeWidth;
+		cy = rand() % mazeHeight;
+	} while (maze[cx][cy] == 1);
+
+	collectible = new Collectible({ static_cast<float>(cx), 0.5f, static_cast<float>(cy) }, "assets/models/Joesama.obj");
+
 }
 
 void Maze::drawMaze3D() {
@@ -54,6 +65,9 @@ void Maze::drawMaze3D() {
 				DrawCube(position, 1.0f, 1.0f, 1.0f, DARKGRAY);
 			}
 		}
+	}
+	if (collectible != nullptr) {
+		collectible->draw();
 	}
 }
 
