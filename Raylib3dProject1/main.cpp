@@ -11,6 +11,7 @@
 
 int main() {
 
+
 	Maze maze;
 
 
@@ -28,7 +29,7 @@ int main() {
 
 
 
-	float moveSpeed = 0.1f;
+	float moveSpeed = 0.06f;
 	float mouseSensitivity = 0.003f;
 
 	float yaw = 0.0f;
@@ -40,12 +41,13 @@ int main() {
 
 	maze.initMaze();
 	maze.generateMaze(1, 1);
+	maze.placeCollectible();
 
 	SetTargetFPS(60);
 
 	while (!WindowShouldClose()) {
 		
-		//camera.position.y = .6f;
+		camera.position.y = .6f;
 
 		Vector2 mouseDelta = GetMouseDelta();
 		yaw -= mouseDelta.x * mouseSensitivity;
@@ -63,8 +65,8 @@ int main() {
 		forward = Vector3Normalize(forward);
 
 		camera.target = Vector3Add(camera.position, forward);
-	
 
+	
 		Vector3 right = Vector3CrossProduct(forward, Vector3Normalize(camera.up));
 		right.y = 0.0f;
 		right = Vector3Normalize(right);
@@ -74,7 +76,11 @@ int main() {
 			moveSpeed = 0.01f;
 		}
 		else {
-			moveSpeed = 0.1f;
+			moveSpeed = 0.08f;
+		}
+
+		if (IsKeyPressed(KEY_R)) {
+			maze.placeCollectible();
 		}
 
 		if (IsKeyDown(KEY_W)) {
@@ -125,24 +131,25 @@ int main() {
 			
 		}
 
-		if (maze.collectible != nullptr && maze.collectible->checkCollision(camera.position)) {
-			std::cout << "You collected the item! You win!" << std::endl;
-			// Handle win condition (e.g., stop the game or display a victory message)
-		}
+	
 
 
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
 
 		BeginMode3D(camera);
-		maze.drawMaze3D();
+		maze.drawMaze3D(camera.position);
 		
 		DrawPlane({ 7.0f, 0.0f, 7.0f }, { 15.0f, 15.0f }, LIGHTGRAY);
 		//DrawGrid(10, 1.0f);
 
-		EndMode3D();
 
-		DrawText("3D Maze Explorer", 10, 10, 20, DARKGRAY);
+		EndMode3D();
+		if (maze.collectible != nullptr && maze.collectible->checkCollision(camera.position)) {
+			DrawText("YOU FOUND JOE!!!! Press R to find Joe again!", screenWidth / 2 - 250, screenHeight / 2, 25, RED);
+		}
+
+		DrawText("Joe is lost! Find Joe!", 10, 10, 25, RED);
 
 		EndDrawing();
 

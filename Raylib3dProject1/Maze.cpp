@@ -46,7 +46,9 @@ void Maze::generateMaze(int x, int y) {
 			generateMaze(nx, ny);
 		}
 	}
+}
 
+void Maze::placeCollectible() {
 	int cx, cy;
 	do {
 		cx = rand() % mazeWidth;
@@ -57,7 +59,7 @@ void Maze::generateMaze(int x, int y) {
 
 }
 
-void Maze::drawMaze3D() {
+void Maze::drawMaze3D(Vector3 playerPosition) {
 	for (int x = 0; x < mazeWidth; x++) {
 		for (int y = 0; y < mazeHeight; y++) {
 			if (maze[x][y] == 1) {
@@ -67,7 +69,7 @@ void Maze::drawMaze3D() {
 		}
 	}
 	if (collectible != nullptr) {
-		collectible->draw();
+		collectible->draw(playerPosition);
 	}
 }
 

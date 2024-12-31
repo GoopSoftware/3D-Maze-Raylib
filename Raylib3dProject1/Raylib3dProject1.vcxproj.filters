@@ -48,7 +48,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="assets\models\image0.jpg">
+    <Image Include="assets\models\image0.png">
       <Filter>assets\models</Filter>
     </Image>
   </ItemGroup>

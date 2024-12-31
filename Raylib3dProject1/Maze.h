@@ -14,11 +14,11 @@ public:
 
 	void initMaze();
 	void generateMaze(int x, int y);
-	void drawMaze3D();
+	void drawMaze3D(Vector3 playerPosition);
 	bool isWallAtPosition(int x, int y);
 	bool checkCollisionWithWall(Vector3 newPosition);
 	Vector3 findValidSpawnPosition();
-
+	void placeCollectible();
 	Collectible* collectible;
 
 private:
