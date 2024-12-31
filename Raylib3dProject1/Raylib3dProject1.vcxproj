@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="Collectible.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="main2.cpp" />
     <ClCompile Include="Maze.cpp" />
   </ItemGroup>
   <ItemGroup>

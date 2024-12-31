@@ -1,3 +1,4 @@
+/*
 #include "raylib.h"
 #include "raymath.h"
 #include "maze.h"
@@ -73,10 +74,10 @@ int main() {
 
 
 		if (IsKeyDown(KEY_LEFT_SHIFT)) {
-			moveSpeed = 0.01f;
+			moveSpeed = 0.08f;
 		}
 		else {
-			moveSpeed = 0.08f;
+			moveSpeed = 0.04f;
 		}
 
 		if (IsKeyPressed(KEY_R)) {
@@ -135,13 +136,12 @@ int main() {
 
 
 		BeginDrawing();
-		ClearBackground(RAYWHITE);
+		ClearBackground(LIGHTGRAY);
 
 		BeginMode3D(camera);
 		maze.drawMaze3D(camera.position);
 		
 		DrawPlane({ 7.0f, 0.0f, 7.0f }, { 15.0f, 15.0f }, LIGHTGRAY);
-		//DrawGrid(10, 1.0f);
 
 
 		EndMode3D();
@@ -159,3 +159,4 @@ int main() {
 
 	return 0;
 }
+*/
