@@ -21,6 +21,9 @@ int main() {
 	camera.up = { 0.0f, 1.0f, 0.0f };
 	camera.fovy = 45.0f;
 	camera.projection = CAMERA_PERSPECTIVE;
+	// To prevent the y coordinate from being effected by movement
+	Vector3 originalCameraPosition = camera.position;
+	Vector3 originalCameraTarget = camera.target;
 
 
 	float mouseSensitivity = 0.003f;
@@ -28,20 +31,25 @@ int main() {
 	float pitch = 0.0f;
 	float moveSpeed = 0.15;
 
-
 	// physics variables
 	const float groundHeight = 4.0f;
 	float velocity = 0.0f;
-	const float jumpForce = 5.f;
+	const float jumpForce = 2.f;
 	const float gravity = 0.1f;
-	bool isOnGround = false;
-	float timeStep = .016f;
+	bool isOnGround = true;
+	float groundY = 4.0f;
+	//float distanceToGround = 0.0f;
+	float rayDistY{};
+	bool jumping = false;
 
 	DisableCursor();
 
 	SetTargetFPS(60);
 
 	while (!WindowShouldClose()) {
+
+
+
 
 
 		Vector2 mouseDelta = GetMouseDelta();
@@ -66,35 +74,56 @@ int main() {
 		camera.target = Vector3Add(camera.position, forward);
 
 
-		
-		std::cout << isOnGround;
-		if (camera.position.y <= groundHeight + 5) {
-			//camera.target.y = groundHeight;
-			camera.position.y = groundHeight;
-			velocity = 0.0f;
-			isOnGround = true;
-			if (IsKeyPressed(KEY_SPACE)) {
-				isOnGround = false;
-				velocity = jumpForce;
-				camera.target.y += velocity;
-				camera.position.y += velocity;
-			}
-		}
-		else {
-			velocity -= gravity;
-		}
-		//float nextY = camera.position.y + velocity * timeStep;
-		
+		// if player goes below 9y from a jump set player to 4 and set y velocity to 0
+		// player isOnGround
+		// allow pressing space key to jump
+		// after space key player is not on ground
+		// velocity = jumpforce
+		// add Velocitry to target and pos y to simulate jump
+		// breaking the if statement to the else statement where we subtract velocity by gravity 
 
-		if (!isOnGround) {
+		
+		Ray ray = { camera.position, {0.0f, -1.0f, 0.0f} };
+		Vector3 endPoint = Vector3Add(ray.position, Vector3Scale(ray.direction, 10.0f));
+		rayDistY = (groundY - ray.position.y) / ray.direction.y;
+		std::cout << "endPoint: " << endPoint.y << std::endl;
+		std::cout << "Camera PosY: " << camera.position.y << std::endl;
+		std::cout << "RayDistY: " << rayDistY << std::endl;
+		std::cout << "isOnGround: " << isOnGround << std::endl;
+		std::cout << "Jumping: " << jumping << std::endl;
+		//std::cout << "Velocity: " << velocity << std::endl;
+		std::cout << "-----------------------" << std::endl;
+
+
+		// Press space to activate bool jump
+		if (IsKeyPressed(KEY_SPACE) && isOnGround && !jumping) {
+			velocity = jumpForce;
+			jumping = true;
+			isOnGround = false;
+			std::cout << "*****************************Jump Pressed***************************" << std::endl;
+		}
+
+		if (rayDistY < 0) {
+			std::cout << "*****************************Landed***************************" << std::endl;
+			isOnGround = true;
+			jumping = false;
+			
+		}
+
+		// Applies the jump logic
+		// Applies gravity to velocity to bring the camera down
+		if (!isOnGround && jumping) {
 			camera.target.y += velocity;
 			camera.position.y += velocity;
-		
+			velocity -= gravity;
 		}
-		if (isOnGround) {
-			camera.position.y = 4.f;
+
+		// Normalizes the Y coordinate
+		if (isOnGround && !jumping) {
+			camera.position.y = groundHeight;
+			velocity = 0.0f;
+			jumping = false;
 		}
-		std::cout << camera.position.y << std::endl;
 
 
 		if (IsKeyDown(KEY_LEFT_SHIFT)) {
@@ -103,16 +132,20 @@ int main() {
 		else {
 			moveSpeed = 0.15f;
 		}
-
-
 	
 		if (IsKeyDown(KEY_W)) {
 			camera.position = Vector3Add(camera.position, Vector3Scale(forward, moveSpeed));
 			camera.target = Vector3Add(camera.target, Vector3Scale(forward, moveSpeed));
+			if (!jumping) {
+				camera.position.y = originalCameraPosition.y;
+			}
 		}
 		if (IsKeyDown(KEY_S)) {
 			camera.position = Vector3Subtract(camera.position, Vector3Scale(forward, moveSpeed));
 			camera.target = Vector3Subtract(camera.target, Vector3Scale(forward, moveSpeed));
+			if (!jumping) {
+				camera.position.y = originalCameraPosition.y;
+			}
 		}
 		if (IsKeyDown(KEY_A)) {
 			camera.position = Vector3Subtract(camera.position, Vector3Scale(right, moveSpeed));
@@ -124,16 +157,15 @@ int main() {
 		}
 
 
-	
-
-
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
-
-
 		BeginMode3D(camera);
-		
+
+		DrawLine3D(ray.position, endPoint, RED);
+
 		DrawGrid(100, 10);
+
+
 
 		EndMode3D();
 		EndDrawing();
@@ -144,4 +176,3 @@ int main() {
 
 	return 0;
 }
-
