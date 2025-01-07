@@ -1,20 +1,43 @@
 #include "raylib.h"
 #include "raymath.h"
 
+#include "Player.h"
+#include "Bow.h"
+
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
 
 
 
+
+
+/*
+ToDo
+
+1. Find 3d asset for bow
+2. Find asset for arrow
+3. Apply assets to screen based on camera pos
+4. apply trackArrow values to shooting the arrow
+5. apply animation to bow
+6. Add a target
+7. move target around
+8. GUI
+
+*/
 int main() {
 
 	const int screenWidth = 800;
 	const int screenHeight = 600;
+	bool debugEnabled = false;
+
 	
-	
+	Player player;
+	Bow bow;
+
 	InitWindow(screenWidth, screenHeight, "3D Fun");
 
+	
 	Camera3D camera = { 0 };
 	camera.position = { 1, 4, 1 };
 	camera.target = { 4.0f, 4.0f, 3.0f };
@@ -22,14 +45,16 @@ int main() {
 	camera.fovy = 45.0f;
 	camera.projection = CAMERA_PERSPECTIVE;
 	// To prevent the y coordinate from being effected by movement
-	Vector3 originalCameraPosition = camera.position;
-	Vector3 originalCameraTarget = camera.target;
-
+	
+	
 
 	float mouseSensitivity = 0.003f;
 	float yaw = 0.0f;
 	float pitch = 0.0f;
 	float moveSpeed = 0.15;
+	float timeMouseHeld = 0.0f;
+	const float maxTimeHeld = 2.f;
+
 
 	// physics variables
 	const float groundHeight = 4.0f;
@@ -42,6 +67,10 @@ int main() {
 	float rayDistY{};
 	bool jumping = false;
 
+	bool trackArrowBool = false;
+
+
+
 	DisableCursor();
 
 	SetTargetFPS(60);
@@ -49,16 +78,25 @@ int main() {
 	while (!WindowShouldClose()) {
 
 
-
-
-
 		Vector2 mouseDelta = GetMouseDelta();
 		yaw -= mouseDelta.x * mouseSensitivity;
 		pitch -= mouseDelta.y * mouseSensitivity;
 
+		float pitchAngle = pitch / 1.4708 * 90;
+		if (pitchAngle <= -45) pitchAngle = -45;
+		bow.angleDegrees = pitchAngle;
+
 		// Prevents looking too far down or up flipping
 		if (pitch > PI / 2.0f - 0.1f) pitch = PI / 2.0f - 0.1f;
 		if (pitch < -PI / 2.0f + 0.1f) pitch = -PI / 2.0f + 0.1f;
+
+		
+		if (yaw < -6.285f) yaw = 0.f;
+		if (yaw > 6.285f) yaw = 0.f;
+
+
+		// Calculates the direction camera is facing
+		float yawAngle = yaw / 6.285 * 360;
 
 		Vector3 forward = {
 				cosf(pitch) * sinf(yaw),
@@ -74,18 +112,11 @@ int main() {
 		camera.target = Vector3Add(camera.position, forward);
 
 
-		// if player goes below 9y from a jump set player to 4 and set y velocity to 0
-		// player isOnGround
-		// allow pressing space key to jump
-		// after space key player is not on ground
-		// velocity = jumpforce
-		// add Velocitry to target and pos y to simulate jump
-		// breaking the if statement to the else statement where we subtract velocity by gravity 
 
-		
 		Ray ray = { camera.position, {0.0f, -1.0f, 0.0f} };
 		Vector3 endPoint = Vector3Add(ray.position, Vector3Scale(ray.direction, 10.0f));
 		rayDistY = (groundY - ray.position.y) / ray.direction.y;
+		/* ------------------ Camera Debug ----------------------
 		std::cout << "endPoint: " << endPoint.y << std::endl;
 		std::cout << "Camera PosY: " << camera.position.y << std::endl;
 		std::cout << "RayDistY: " << rayDistY << std::endl;
@@ -93,6 +124,7 @@ int main() {
 		std::cout << "Jumping: " << jumping << std::endl;
 		//std::cout << "Velocity: " << velocity << std::endl;
 		std::cout << "-----------------------" << std::endl;
+		*/
 
 
 		// Press space to activate bool jump
@@ -100,11 +132,11 @@ int main() {
 			velocity = jumpForce;
 			jumping = true;
 			isOnGround = false;
-			std::cout << "*****************************Jump Pressed***************************" << std::endl;
+			//std::cout << "*****************************Jump Pressed***************************" << std::endl;
 		}
 
 		if (rayDistY < 0) {
-			std::cout << "*****************************Landed***************************" << std::endl;
+			//std::cout << "*****************************Landed***************************" << std::endl;
 			isOnGround = true;
 			jumping = false;
 			
@@ -132,20 +164,52 @@ int main() {
 		else {
 			moveSpeed = 0.15f;
 		}
+
+		if (trackArrowBool) {
+			bow.trackArrow();
+			if (bow.arrowDest.y <= 0) {
+				bow.arrowDest = { 0.0f, 0.0f };
+				bow.time = 0.0f;
+				trackArrowBool = false;
+			}
+		}
+		
+
+		if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+			timeMouseHeld += GetFrameTime();
+			bow.displacement = (bow.maxDisplacement + 1.f) * (timeMouseHeld / maxTimeHeld);
+			if (bow.displacement > bow.maxDisplacement) bow.displacement = bow.maxDisplacement;
+			bow.arrowVelocity();
+			bow.bowElasticPotential();
+			bow.stringForceRequired();
+			bow.calculateRange();
+			bow.calculateTotalDistance();
+		}
+
+		else {
+			timeMouseHeld = 0.0f;
+			bow.displacement = 0.0f;
+		}
+
 	
+		if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+			std::cout << "BOW FIRED" << std::endl;
+			trackArrowBool = true;
+			bow.printResults();
+		}
+	
+
+		if (IsKeyPressed(KEY_P)) {
+			debugEnabled = !debugEnabled;
+		}
+
 		if (IsKeyDown(KEY_W)) {
 			camera.position = Vector3Add(camera.position, Vector3Scale(forward, moveSpeed));
 			camera.target = Vector3Add(camera.target, Vector3Scale(forward, moveSpeed));
-			if (!jumping) {
-				camera.position.y = originalCameraPosition.y;
-			}
 		}
 		if (IsKeyDown(KEY_S)) {
 			camera.position = Vector3Subtract(camera.position, Vector3Scale(forward, moveSpeed));
 			camera.target = Vector3Subtract(camera.target, Vector3Scale(forward, moveSpeed));
-			if (!jumping) {
-				camera.position.y = originalCameraPosition.y;
-			}
 		}
 		if (IsKeyDown(KEY_A)) {
 			camera.position = Vector3Subtract(camera.position, Vector3Scale(right, moveSpeed));
@@ -161,6 +225,7 @@ int main() {
 		ClearBackground(RAYWHITE);
 		BeginMode3D(camera);
 
+
 		DrawLine3D(ray.position, endPoint, RED);
 
 		DrawGrid(100, 10);
@@ -168,6 +233,38 @@ int main() {
 
 
 		EndMode3D();
+
+	
+		if (debugEnabled) {
+
+
+
+			DrawText(TextFormat("Debug Enabled"), screenWidth / 2 - 25, 10, 20, BLACK);
+
+			DrawText(TextFormat("Displacement: %.2f", bow.displacement), 10, 10, 20, BLACK);
+			DrawText(TextFormat("Angle: %.2f", bow.angleDegrees), 10, 30, 20, BLACK);
+			DrawText(TextFormat("Direction: %.2f", yawAngle), 10, 50, 20, BLACK);
+			DrawText(TextFormat("Bow Elastic Potential: %.2f", bow.elasticPotential), 10, 70, 20, BLACK);
+			DrawText(TextFormat("Arrow Velocity: %.2f", bow.velocity), 10, 90, 20, BLACK);
+			DrawText(TextFormat("Force Required: %.2f", bow.forceRequired), 10, 110, 20, BLACK);
+			DrawText(TextFormat("Distance Arrow Traveled: %.2f", bow.arrowDistance), 10, 130, 20, BLACK);
+
+
+			DrawText(TextFormat("Time Step: %.2f seconds", bow.time), 10, 150, 20, BLACK);
+			DrawText(TextFormat("Arrow X Position: %.2f meters", bow.arrowDest.x), 10, 170, 20, BLACK);
+			DrawText(TextFormat("Arrow Y Position: %.2f meters", bow.arrowDest.y), 10, 190, 20, BLACK);
+			DrawText(TextFormat("Arrow Distance: %.2f meters", bow.arrowDistance), 10, 210, 20, BLACK);
+		}
+	
+
+		/*
+				std::cout << std::fixed << std::setprecision(2);
+				std::cout << "Time (s): " << time
+					<< "\tDistance (m): " << arrowDest.x
+					<< "\tHeight (m): " << arrowDest.y << "\n";
+		*/
+
+
 		EndDrawing();
 
 	}
