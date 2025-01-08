@@ -78,6 +78,8 @@ int main() {
 	while (!WindowShouldClose()) {
 
 
+
+
 		Vector2 mouseDelta = GetMouseDelta();
 		yaw -= mouseDelta.x * mouseSensitivity;
 		pitch -= mouseDelta.y * mouseSensitivity;
@@ -97,6 +99,20 @@ int main() {
 
 		// Calculates the direction camera is facing
 		float yawAngle = yaw / 6.285 * 360;
+		float yawRadians = yawAngle * (PI / 180.f);
+		
+		float arrowDistance = 2.0f;
+		float arrowDirX = sinf(yaw);
+		float arrowDirZ = cosf(yaw);
+		float arrowDirY = sinf(pitch);
+
+		
+		Vector3 arrowPosition = { 
+				(camera.position.x + arrowDirX * arrowDistance),
+				camera.position.y + arrowDirY * arrowDistance,
+				(camera.position.z + arrowDirZ * arrowDistance)
+		};
+		
 
 		Vector3 forward = {
 				cosf(pitch) * sinf(yaw),
@@ -166,7 +182,7 @@ int main() {
 		}
 
 		if (trackArrowBool) {
-			bow.trackArrow();
+			bow.trackArrow(yaw);
 			if (bow.arrowDest.y <= 0) {
 				bow.arrowDest = { 0.0f, 0.0f };
 				bow.time = 0.0f;
@@ -194,6 +210,7 @@ int main() {
 	
 		if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
 			std::cout << "BOW FIRED" << std::endl;
+		
 			trackArrowBool = true;
 			bow.printResults();
 		}
@@ -219,7 +236,9 @@ int main() {
 			camera.position = Vector3Add(camera.position, Vector3Scale(right, moveSpeed));
 			camera.target = Vector3Add(camera.target, Vector3Scale(right, moveSpeed));
 		}
-
+		arrowPosition.x += bow.arrowDest.x / 2;
+		arrowPosition.y += bow.arrowDest.y / 2;
+		arrowPosition.z += bow.arrowDest.z / 2;
 
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
@@ -227,7 +246,7 @@ int main() {
 
 
 		DrawLine3D(ray.position, endPoint, RED);
-
+		DrawCube(arrowPosition, 0.2f, 0.2f, 0.2f, RED);
 		DrawGrid(100, 10);
 
 
@@ -243,7 +262,7 @@ int main() {
 
 			DrawText(TextFormat("Displacement: %.2f", bow.displacement), 10, 10, 20, BLACK);
 			DrawText(TextFormat("Angle: %.2f", bow.angleDegrees), 10, 30, 20, BLACK);
-			DrawText(TextFormat("Direction: %.2f", yawAngle), 10, 50, 20, BLACK);
+			DrawText(TextFormat("Direction: %.2f", yaw), 10, 50, 20, BLACK);
 			DrawText(TextFormat("Bow Elastic Potential: %.2f", bow.elasticPotential), 10, 70, 20, BLACK);
 			DrawText(TextFormat("Arrow Velocity: %.2f", bow.velocity), 10, 90, 20, BLACK);
 			DrawText(TextFormat("Force Required: %.2f", bow.forceRequired), 10, 110, 20, BLACK);
@@ -254,6 +273,11 @@ int main() {
 			DrawText(TextFormat("Arrow X Position: %.2f meters", bow.arrowDest.x), 10, 170, 20, BLACK);
 			DrawText(TextFormat("Arrow Y Position: %.2f meters", bow.arrowDest.y), 10, 190, 20, BLACK);
 			DrawText(TextFormat("Arrow Distance: %.2f meters", bow.arrowDistance), 10, 210, 20, BLACK);
+
+			DrawText(TextFormat("X: %.2f", camera.position.x), screenWidth - 100, 10, 20, BLACK);
+			DrawText(TextFormat("Y: %.2f", camera.position.y), screenWidth - 100, 30, 20, BLACK);
+			DrawText(TextFormat("Z: %.2f", camera.position.z), screenWidth - 100, 50, 20, BLACK);
+
 		}
 	
 

@@ -40,7 +40,7 @@ public:
 	float stringForceRequired() { return forceRequired = stiffness * displacement; }
 	float calculateRange();
 	float calculateTotalDistance() { return sqrt(horizontal * horizontal + vertical * vertical); }
-	void trackArrow();
+	void trackArrow(float yawRadians);
 	void printResults();
 
 

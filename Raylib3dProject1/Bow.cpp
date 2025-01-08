@@ -20,27 +20,30 @@ float Bow::calculateRange() {
 }
 
 
-void Bow::trackArrow() {
+void Bow::trackArrow(float yawRadians) {
 
-	float angleRadians = angleDegrees * PI / 180;
+	float angleRadians = angleDegrees * PI / 180.f;
 
 	initialVelocity = velocity;
 
-	float v_x = initialVelocity * std::cos(angleRadians);
-	float v_y = initialVelocity * std::sin(angleRadians) - gravity * time;
+	float v_x = initialVelocity * cos(angleRadians) * sin(yawRadians); // X uses sin
+	float v_z = initialVelocity * cos(angleRadians) * cos(yawRadians); // Z uses cos
+	float v_y = initialVelocity * sin(angleRadians) - gravity * time;
 
 	//std::cout << "INITVEL: " << initialVelocity << " GRAV: " << gravity << " TIME: " << time << std::endl;
 	//std::cout << "VX: " << v_x << " VY: " << v_y << std::endl;
+	float dirZ = std::sin(yawRadians);
 
 	arrowDest.x += v_x * timeStep;
 	arrowDest.y += v_y * timeStep;
-	
+	arrowDest.z += v_z * timeStep;
 
 
 	std::cout << std::fixed << std::setprecision(2);
 	std::cout << "Time (s): " << time
 		<< "\tDistance (m): " << arrowDest.x
-		<< "\tHeight (m): " << arrowDest.y << "\n";
+		<< "\tHeight (m): " << arrowDest.y
+		<< "\tZ Position (m): " << arrowDest.z << "\n";
 	
 
 
