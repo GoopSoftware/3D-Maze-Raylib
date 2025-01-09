@@ -15,7 +15,7 @@ public:
 	const float gravity = 9.8f;
 	float stiffness{ 165 };
 	float displacement{ };
-	const float maxDisplacement{ 1.f };
+	const float maxDisplacement{ 1.5f };
 	float mass{ .02 };
 	float angleDegrees{ 45 };
 	const float timeStep = .2f;

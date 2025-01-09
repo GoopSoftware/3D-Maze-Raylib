@@ -1,4 +1,4 @@
-/*
+
 #include "raylib.h"
 #include "raymath.h"
 #include "maze.h"
@@ -159,4 +159,3 @@ int main() {
 
 	return 0;
 }
-*/

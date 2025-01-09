@@ -27,8 +27,8 @@ ToDo
 */
 int main() {
 
-	const int screenWidth = 800;
-	const int screenHeight = 600;
+	const int screenWidth = 1280;
+	const int screenHeight = 720;
 	bool debugEnabled = false;
 
 	
@@ -163,6 +163,7 @@ int main() {
 		if (!isOnGround && jumping) {
 			camera.target.y += velocity;
 			camera.position.y += velocity;
+			arrowPosition.y += velocity;
 			velocity -= gravity;
 		}
 
@@ -183,7 +184,7 @@ int main() {
 
 		if (trackArrowBool) {
 			bow.trackArrow(yaw);
-			if (bow.arrowDest.y <= 0) {
+			if (bow.arrowDest.y <= -4) {
 				bow.arrowDest = { 0.0f, 0.0f };
 				bow.time = 0.0f;
 				trackArrowBool = false;
@@ -220,25 +221,48 @@ int main() {
 			debugEnabled = !debugEnabled;
 		}
 
+		
 		if (IsKeyDown(KEY_W)) {
+			
 			camera.position = Vector3Add(camera.position, Vector3Scale(forward, moveSpeed));
-			camera.target = Vector3Add(camera.target, Vector3Scale(forward, moveSpeed));
+			camera.position.y = groundHeight;
+			camera.target = Vector3Add(camera.position, forward);
+
+			arrowPosition = Vector3Add(arrowPosition, Vector3Scale(forward, moveSpeed));
+
+
+			
 		}
 		if (IsKeyDown(KEY_S)) {
 			camera.position = Vector3Subtract(camera.position, Vector3Scale(forward, moveSpeed));
-			camera.target = Vector3Subtract(camera.target, Vector3Scale(forward, moveSpeed));
+			camera.position.y = groundHeight;
+			camera.target = Vector3Add(camera.position, forward);
+
+			arrowPosition = Vector3Subtract(arrowPosition, Vector3Scale(forward, moveSpeed));
+
 		}
 		if (IsKeyDown(KEY_A)) {
 			camera.position = Vector3Subtract(camera.position, Vector3Scale(right, moveSpeed));
 			camera.target = Vector3Subtract(camera.target, Vector3Scale(right, moveSpeed));
+
+			arrowPosition = Vector3Subtract(arrowPosition, Vector3Scale(right, moveSpeed));
+
 		}
 		if (IsKeyDown(KEY_D)) {
 			camera.position = Vector3Add(camera.position, Vector3Scale(right, moveSpeed));
 			camera.target = Vector3Add(camera.target, Vector3Scale(right, moveSpeed));
+
+			arrowPosition = Vector3Add(arrowPosition, Vector3Scale(right, moveSpeed));
+
 		}
+
+
+		// This visualizes the arrow path
 		arrowPosition.x += bow.arrowDest.x / 2;
 		arrowPosition.y += bow.arrowDest.y / 2;
 		arrowPosition.z += bow.arrowDest.z / 2;
+
+
 
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
