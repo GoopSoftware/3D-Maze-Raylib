@@ -33,16 +33,13 @@ the player must shoot the enemy before the enemy hits the player 3 times
 */
 
 
-
-
-
-
 int main() {
 
 	const int screenWidth = 1280;
 	const int screenHeight = 720;
 
 	InitWindow(screenWidth, screenHeight, "3D Fun");
+	SetMousePosition(screenWidth / 2, screenHeight / 2);
 
 	Player player;
 	Enemy enemy({1, 4, 20}, "assets/models/Joesama.obj", "assets/models/image0.png");
@@ -50,8 +47,8 @@ int main() {
 	
 
 	Camera3D camera = { 0 };
-	camera.position = { 1, 4, 1 };
-	camera.target = { 4.0f, 4.0f, 3.0f };
+	camera.position = {};
+	camera.target = {};
 	camera.up = { 0.0f, 1.0f, 0.0f };
 	camera.fovy = 45.0f;
 	camera.projection = CAMERA_PERSPECTIVE;
@@ -83,6 +80,9 @@ int main() {
 	bool debugEnabled = false;
 	bool trackArrowBool = false;
 	bool enemyIsHit = false;
+	float arrowSize = .2f;
+
+
 
 	DisableCursor();
 
@@ -91,6 +91,8 @@ int main() {
 	while (!WindowShouldClose()) {
 
 
+		camera.position = { player.position };
+		camera.target = { player.target };
 
 		float deltaTime = GetFrameTime();
 
@@ -106,10 +108,8 @@ int main() {
 		if (pitch > PI / 2.0f - 0.1f) pitch = PI / 2.0f - 0.1f;
 		if (pitch < -PI / 2.0f + 0.1f) pitch = -PI / 2.0f + 0.1f;
 
-		
 		if (yaw < -6.285f) yaw = 0.f;
 		if (yaw > 6.285f) yaw = 0.f;
-
 
 		// Calculates the direction camera is facing
 		float yawAngle = yaw / 6.285 * 360;
@@ -122,9 +122,9 @@ int main() {
 
 		
 		Vector3 arrowPosition = { 
-				(camera.position.x + arrowDirX * arrowDistance),
-				camera.position.y + arrowDirY * arrowDistance,
-				(camera.position.z + arrowDirZ * arrowDistance)
+				(player.position.x + arrowDirX * arrowDistance),
+				(player.position.y + arrowDirY * arrowDistance),
+				(player.position.z + arrowDirZ * arrowDistance)
 		};
 		
 
@@ -134,30 +134,34 @@ int main() {
 				cosf(pitch) * cosf(yaw)
 		};
 
+		// Normalize movement
 		forward = Vector3Normalize(forward);
-		// Moves the Camera
+		// Calculate the right vector
 		Vector3 right = Vector3CrossProduct(forward, Vector3Normalize(camera.up));
 		right.y = 0.0f;
+		// normalize the right vector
 		right = Vector3Normalize(right);
-		camera.target = Vector3Add(camera.position, forward);
+		camera.target = Vector3Add(player.position, forward);
 
 
-
-		Ray ray = { camera.position, {0.0f, -1.0f, 0.0f} };
+		// Shoots a ray into the ground to predict jump landing
+		Ray ray = { player.position, {0.0f, -1.0f, 0.0f} };
 		Vector3 endPoint = Vector3Add(ray.position, Vector3Scale(ray.direction, 10.0f));
 		rayDistY = (groundY - ray.position.y) / ray.direction.y;
+
+
 		// ------------------ Camera Debug ----------------------
-		std::cout << "endPoint: " << endPoint.y << std::endl;
-		std::cout << "Camera PosY: " << camera.position.y << std::endl;
-		std::cout << "RayDistY: " << rayDistY << std::endl;
-		std::cout << "isOnGround: " << isOnGround << std::endl;
-		std::cout << "Jumping: " << jumping << std::endl;
+		//std::cout << "endPoint: " << endPoint.y << std::endl;
+		//std::cout << "Camera PosY: " << camera.position.y << std::endl;
+		//std::cout << "RayDistY: " << rayDistY << std::endl;
+		//std::cout << "isOnGround: " << isOnGround << std::endl;
+		//std::cout << "Jumping: " << jumping << std::endl;
 		//std::cout << "Velocity: " << velocity << std::endl;
-		std::cout << "-----------------------" << std::endl;
+		//std::cout << "-----------------------" << std::endl;
 
 
-
-		//enemy.chasePlayer(camera.position, deltaTime);
+	
+		enemy.chasePlayer(player.position, deltaTime);
 
 		// Press space to activate bool jump
 		if (IsKeyPressed(KEY_SPACE) && isOnGround && !jumping) {
@@ -177,25 +181,25 @@ int main() {
 		// Applies the jump logic
 		// Applies gravity to velocity to bring the camera down
 		if (!isOnGround && jumping) {
-			camera.target.y += velocity;
-			camera.position.y += velocity;
+			player.target.y += velocity;
+			player.position.y += velocity;
 			arrowPosition.y += velocity;
 			velocity -= gravity;
 		}
 
 		// Normalizes the Y coordinate
 		if (isOnGround && !jumping) {
-			camera.position.y = groundHeight;
+			player.position.y = groundHeight;
 			velocity = 0.0f;
 			jumping = false;
 		}
 
 
 		if (IsKeyDown(KEY_LEFT_SHIFT)) {
-			moveSpeed = 0.5f;
+			moveSpeed = 0.65f;
 		}
 		else {
-			moveSpeed = 0.15f;
+			moveSpeed = 0.4f;
 		}
 		
 	
@@ -219,112 +223,110 @@ int main() {
 		
 			trackArrowBool = true;
 			bow.printResults();
+
 		}
 		if (IsKeyPressed(KEY_P)) {
 			debugEnabled = !debugEnabled;
 		}		
 		if (IsKeyDown(KEY_W)) {
 			if (!jumping) {
-				camera.position = Vector3Add(camera.position, Vector3Scale(forward, moveSpeed));
-				camera.position.y = groundHeight;
-				camera.target = Vector3Add(camera.position, forward);
-
-				arrowPosition = Vector3Add(arrowPosition, Vector3Scale(forward, moveSpeed));
+				player.position = Vector3Add(player.position, Vector3Scale(forward, moveSpeed));
+				player.position.y = groundHeight;
+				player.target = Vector3Add(player.position, forward);
 			}
 		}
 		if (IsKeyDown(KEY_S)) {
 			if (!jumping) {
-				camera.position = Vector3Subtract(camera.position, Vector3Scale(forward, moveSpeed));
-				camera.position.y = groundHeight;
-				camera.target = Vector3Add(camera.position, forward);
+				player.position = Vector3Subtract(player.position, Vector3Scale(forward, moveSpeed));
+				player.position.y = groundHeight;
+				player.target = Vector3Add(player.position, forward);
 
-				arrowPosition = Vector3Subtract(arrowPosition, Vector3Scale(forward, moveSpeed));
 			}
 		}
 		if (IsKeyDown(KEY_A)) {
 			if (!jumping) {
-				camera.position = Vector3Subtract(camera.position, Vector3Scale(right, moveSpeed));
-				camera.target = Vector3Subtract(camera.target, Vector3Scale(right, moveSpeed));
-
-				arrowPosition = Vector3Subtract(arrowPosition, Vector3Scale(right, moveSpeed));
+				player.position = Vector3Subtract(player.position, Vector3Scale(right, moveSpeed));
+				player.target = Vector3Subtract(player.target, Vector3Scale(right, moveSpeed));
 			}
 		}
 		if (IsKeyDown(KEY_D)) {
 			if (!jumping) {
-				camera.position = Vector3Add(camera.position, Vector3Scale(right, moveSpeed));
-				camera.target = Vector3Add(camera.target, Vector3Scale(right, moveSpeed));
-
-				arrowPosition = Vector3Add(arrowPosition, Vector3Scale(right, moveSpeed));
+				player.position = Vector3Add(player.position, Vector3Scale(right, moveSpeed));
+				player.target = Vector3Add(player.target, Vector3Scale(right, moveSpeed));
 			}
 		}
 
-		// This allows the arrow to travel
+		// ----------------Arrow Logic----------------------
+		float arrowSpeed = 0.25f;
+
+		arrowPosition.x += bow.arrowDest.x * arrowSpeed;
+		arrowPosition.y += bow.arrowDest.y * arrowSpeed;
+		arrowPosition.z += bow.arrowDest.z * arrowSpeed;
+		float arrowRadius = 1.f;
+
+		
+		Vector3 arrowCollisionSphere = {
+			arrowPosition.x,
+			arrowPosition.y,
+			arrowPosition.z
+		};
+
+		
+
+		// This Resets the arrow position
 		if (trackArrowBool) {
 			bow.trackArrow(yaw);
-			if (bow.arrowDest.y <= -4) {
-				bow.arrowDest = { 0.0f, 0.0f };
+
+			if (arrowPosition.y <= 0.f) {
+				bow.arrowDest = { 0.0f, 0.0f, 0.0f };
 				bow.time = 0.0f;
 				trackArrowBool = false;
-				
+				//std::cout << std::fixed << std::setprecision(2);
+				//std::cout << "RSX: " << rayStart.x << " REX: " << rayEnd.x << "RSY: " << rayStart.y << " REY: " << rayEnd.y << "RSZ: " << rayStart.z << " REZ: " << rayEnd.z << std::endl;
 			}
 		}
-		// ----------------Arrow Logic----------------------
-		float arrowSpeed = 4.f;
-		arrowPosition.x += bow.arrowDest.x / arrowSpeed;
-		arrowPosition.y += bow.arrowDest.y / arrowSpeed;
-		arrowPosition.z += bow.arrowDest.z / arrowSpeed;
-
-		Vector3 rayStart = arrowPosition;
-		Vector3 rayDirection = Vector3Normalize({
-			bow.v_x,
-			bow.v_y,
-			bow.v_z
-		});
-
-		Vector3 rayEnd = Vector3Add(rayStart, Vector3Scale(rayDirection, 40.f));
-
-
-		if (trackArrowBool) {
-			std::cout << std::fixed << std::setprecision(2);
-
-			std::cout << "RSX: " << rayStart.x << " REX: " << rayEnd.x << "RSY: " << rayStart.y << " REY: " << rayEnd.y << "RSZ: " << rayStart.z << " REZ: " << rayEnd.z << std::endl;
-		}
 		
 
-		
-		float distanceToEnemy = Vector3Distance(arrowPosition, enemy.position);
-		
-		if (distanceToEnemy < 10.f && !enemyIsHit) {
-			enemyIsHit = true;
-			score += 1;
-			std::cout << "Arrow Hit: " << score << std::endl;
-			std::cout << "DIST: " << distanceToEnemy << std::endl;
+		if (CheckCollisionSpheres(arrowCollisionSphere, arrowRadius, enemy.position, enemy.boundingSphereRadius)) {
+			if (!enemyIsHit) {
+				if (enemy.distanceToPlayer >= enemy.minDistance) {
+					score += 1;
+					enemyIsHit = true;
+					std::cout << "Arrow Hit: " << score << std::endl;
+					std::cout << "ArrowColY: " << arrowCollisionSphere.y << std::endl;
+					std::cout << "EnemyPosY: " << enemy.position.y << std::endl;
+				}
+			}
 		}
 		else {
 			enemyIsHit = false;
 		}
+
+
 		
 		//-------------------------------------------------
 
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
 		//Draw GUI here
-		DrawRectangle(300, 300 - bow.displacement * 100.f, 25, (bow.displacement * 100.f), GREEN);
 
+		DrawRectangle(screenWidth / 2 + 150, (screenHeight / 2 + 100) - bow.displacement * 100.f, 25, (bow.displacement * 100.f), GREEN);
 
 		BeginMode3D(camera);
 		// Draw 3D elements here
 		 
-		enemy.draw(camera.position);
-		
-		DrawLine3D(rayStart, rayEnd, RED);
+		enemy.draw(player.position);
 
-		DrawLine3D(ray.position, endPoint, RED);
-		DrawCube(arrowPosition, 0.1f, 0.1f, 0.1f, RED);
+		// Jumping ray
+		//DrawLine3D(ray.position, endPoint, RED);
+		//DrawSphere(enemy.position, 4.f, BLUE);
+		DrawSphere(arrowPosition, arrowSize, RED);
 		DrawGrid(100, 10);
 
 
 		EndMode3D();
+		
+		DrawText(TextFormat("Score: %.2f", score), 10, 10, 20, BLACK);
 
 	
 		if (debugEnabled) {
@@ -346,9 +348,9 @@ int main() {
 			DrawText(TextFormat("Arrow Distance: %.2f meters", bow.arrowDistance), 10, 210, 20, BLACK);
 			DrawText(TextFormat("Score: %.2f", score), 10, 230, 20, BLACK);
 
-			DrawText(TextFormat("X: %.2f", camera.position.x), screenWidth - 100, 10, 20, BLACK);
-			DrawText(TextFormat("Y: %.2f", camera.position.y), screenWidth - 100, 30, 20, BLACK);
-			DrawText(TextFormat("Z: %.2f", camera.position.z), screenWidth - 100, 50, 20, BLACK);
+			DrawText(TextFormat("X: %.2f", player.position.x), screenWidth - 100, 10, 20, BLACK);
+			DrawText(TextFormat("Y: %.2f", player.position.y), screenWidth - 100, 30, 20, BLACK);
+			DrawText(TextFormat("Z: %.2f", player.position.z), screenWidth - 100, 50, 20, BLACK);
 
 		}
 

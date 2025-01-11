@@ -1,5 +1,4 @@
-#ifndef ENEMY_H
-#define ENEMY_H
+#pragma once
 
 #include "raylib.h"
 #include "raymath.h"
@@ -15,6 +14,7 @@ public:
 	void draw(Vector3 playerPos);
 	void chasePlayer(Vector3 playerPos, float deltaTime);
 
+
 	bool shot;
 	Vector3 position;
 	Model model;
@@ -22,11 +22,14 @@ public:
 
 	float chaseSpeed = 10.f;
 	Vector3 chaseDir;
-
+	float boundingSphereRadius = 4.0f;
+	float distanceToPlayer;
+	float minDistance = boundingSphereRadius + 4.0f;
 
 
 private:
 
+	float scale = 4.f;
+
 
 };
-#endif

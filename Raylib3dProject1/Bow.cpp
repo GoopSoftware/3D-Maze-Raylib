@@ -1,6 +1,8 @@
 #include "Bow.h"
 
+
 Bow::Bow() {
+
 
 }
 
@@ -38,13 +40,13 @@ void Bow::trackArrow(float yawRadians) {
 	arrowDest.y += v_y * timeStep;
 	arrowDest.z += v_z * timeStep;
 
-	
+	/*
 	std::cout << std::fixed << std::setprecision(2);
 	std::cout << "Time (s): " << time
 		<< "\tX Dist: " << arrowDest.x
 		<< "\tY Dist: " << arrowDest.y
 		<< "\tZ Dist: " << arrowDest.z << "\n";
-	
+	*/
 
 
 	time += timeStep;
@@ -57,4 +59,5 @@ void Bow::printResults() {
 	std::cout << "Arrow velocity: " << velocity << " m/s\n";
 	std::cout << "Force required to pull the string: " << forceRequired << " N\n";
 	std::cout << "The arrow travels: " << arrowDistance << " m\n";
+
 }

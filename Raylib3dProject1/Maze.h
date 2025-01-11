@@ -1,5 +1,4 @@
-#ifndef MAZE_H
-#define MAZE_H
+#pragma once
 
 #include <vector>
 #include "Collectible.h"
@@ -38,5 +37,3 @@ private:
 
 
 };
-
-#endif

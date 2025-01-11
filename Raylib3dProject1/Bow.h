@@ -1,9 +1,12 @@
+#pragma once
+
 #include "raylib.h"
 #include "raymath.h"
 #include <iostream>
 #include <iomanip>
 #include <cmath>
 #include <string>
+
 
 
 class Bow

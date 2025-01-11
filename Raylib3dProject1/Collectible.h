@@ -1,5 +1,4 @@
-#ifndef COLLECTIBLE_H
-#define COLLECTIBLE_H
+#pragma once
 
 #include <raylib.h>
 
@@ -24,5 +23,3 @@ private:
 
 
 };
-
-#endif
