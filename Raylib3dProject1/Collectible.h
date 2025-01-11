@@ -19,9 +19,10 @@ public:
 	Model model;
 	Texture2D texture;
 
+
 private:
 
 
 };
 
-#endif // !1
+#endif

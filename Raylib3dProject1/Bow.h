@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "raymath.h"
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -33,7 +34,7 @@ public:
 
 	Vector3 arrowDest{};
 	Vector3 bowDest{};
-
+	Vector3 rayEnd{};
 
 	float bowElasticPotential() {return elasticPotential = 0.5f * (stiffness * std::pow(displacement, 2));}
 	float arrowVelocity() { return velocity = std::sqrt((stiffness * std::pow(displacement, 2)) / mass); }

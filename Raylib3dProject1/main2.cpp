@@ -3,6 +3,8 @@
 
 #include "Player.h"
 #include "Bow.h"
+#include "Maze.h"
+#include "Enemy.h"
 
 #include <iostream>
 #include <cmath>
@@ -20,24 +22,31 @@ ToDo
 3. Apply assets to screen based on camera pos
 4. apply trackArrow values to shooting the arrow
 5. apply animation to bow
-6. Add a target
 7. move target around
 8. GUI
 
+
+The 3d model will spawn randomly around the map, if an enemy spawns behind the player a red arrow will appear 
+on the side of the screen to steer the player. The enemy will head towards the player at increasing speed
+the player must shoot the enemy before the enemy hits the player 3 times
+
+
 */
+
+
+
 int main() {
 
 	const int screenWidth = 1280;
 	const int screenHeight = 720;
-	bool debugEnabled = false;
-
-	
-	Player player;
-	Bow bow;
 
 	InitWindow(screenWidth, screenHeight, "3D Fun");
 
+	Player player;
+	Enemy enemy({1, 4, 10}, "assets/models/Joesama.obj", "assets/models/image0.png");
+	Bow bow;
 	
+
 	Camera3D camera = { 0 };
 	camera.position = { 1, 4, 1 };
 	camera.target = { 4.0f, 4.0f, 3.0f };
@@ -45,7 +54,10 @@ int main() {
 	camera.fovy = 45.0f;
 	camera.projection = CAMERA_PERSPECTIVE;
 	// To prevent the y coordinate from being effected by movement
-	
+
+
+	// GUI Variables
+	int score{};
 	
 
 	float mouseSensitivity = 0.003f;
@@ -66,10 +78,9 @@ int main() {
 	//float distanceToGround = 0.0f;
 	float rayDistY{};
 	bool jumping = false;
-
+	bool debugEnabled = false;
 	bool trackArrowBool = false;
-
-
+	bool enemyIsHit = false;
 
 	DisableCursor();
 
@@ -79,6 +90,7 @@ int main() {
 
 
 
+		float deltaTime = GetFrameTime();
 
 		Vector2 mouseDelta = GetMouseDelta();
 		yaw -= mouseDelta.x * mouseSensitivity;
@@ -143,6 +155,8 @@ int main() {
 		*/
 
 
+		//enemy.chasePlayer(camera.position, deltaTime);
+
 		// Press space to activate bool jump
 		if (IsKeyPressed(KEY_SPACE) && isOnGround && !jumping) {
 			velocity = jumpForce;
@@ -181,16 +195,8 @@ int main() {
 		else {
 			moveSpeed = 0.15f;
 		}
-
-		if (trackArrowBool) {
-			bow.trackArrow(yaw);
-			if (bow.arrowDest.y <= -4) {
-				bow.arrowDest = { 0.0f, 0.0f };
-				bow.time = 0.0f;
-				trackArrowBool = false;
-			}
-		}
 		
+	
 
 		if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
 			timeMouseHeld += GetFrameTime();
@@ -202,85 +208,106 @@ int main() {
 			bow.calculateRange();
 			bow.calculateTotalDistance();
 		}
-
 		else {
 			timeMouseHeld = 0.0f;
 			bow.displacement = 0.0f;
 		}
-
-	
 		if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
 			std::cout << "BOW FIRED" << std::endl;
 		
 			trackArrowBool = true;
 			bow.printResults();
 		}
-	
-
 		if (IsKeyPressed(KEY_P)) {
 			debugEnabled = !debugEnabled;
-		}
-
-		
+		}		
 		if (IsKeyDown(KEY_W)) {
-			
-			camera.position = Vector3Add(camera.position, Vector3Scale(forward, moveSpeed));
-			camera.position.y = groundHeight;
-			camera.target = Vector3Add(camera.position, forward);
+			if (!jumping) {
+				camera.position = Vector3Add(camera.position, Vector3Scale(forward, moveSpeed));
+				camera.position.y = groundHeight;
+				camera.target = Vector3Add(camera.position, forward);
 
-			arrowPosition = Vector3Add(arrowPosition, Vector3Scale(forward, moveSpeed));
-
-
-			
+				arrowPosition = Vector3Add(arrowPosition, Vector3Scale(forward, moveSpeed));
+			}
 		}
 		if (IsKeyDown(KEY_S)) {
-			camera.position = Vector3Subtract(camera.position, Vector3Scale(forward, moveSpeed));
-			camera.position.y = groundHeight;
-			camera.target = Vector3Add(camera.position, forward);
+			if (!jumping) {
+				camera.position = Vector3Subtract(camera.position, Vector3Scale(forward, moveSpeed));
+				camera.position.y = groundHeight;
+				camera.target = Vector3Add(camera.position, forward);
 
-			arrowPosition = Vector3Subtract(arrowPosition, Vector3Scale(forward, moveSpeed));
-
+				arrowPosition = Vector3Subtract(arrowPosition, Vector3Scale(forward, moveSpeed));
+			}
 		}
 		if (IsKeyDown(KEY_A)) {
-			camera.position = Vector3Subtract(camera.position, Vector3Scale(right, moveSpeed));
-			camera.target = Vector3Subtract(camera.target, Vector3Scale(right, moveSpeed));
+			if (!jumping) {
+				camera.position = Vector3Subtract(camera.position, Vector3Scale(right, moveSpeed));
+				camera.target = Vector3Subtract(camera.target, Vector3Scale(right, moveSpeed));
 
-			arrowPosition = Vector3Subtract(arrowPosition, Vector3Scale(right, moveSpeed));
-
+				arrowPosition = Vector3Subtract(arrowPosition, Vector3Scale(right, moveSpeed));
+			}
 		}
 		if (IsKeyDown(KEY_D)) {
-			camera.position = Vector3Add(camera.position, Vector3Scale(right, moveSpeed));
-			camera.target = Vector3Add(camera.target, Vector3Scale(right, moveSpeed));
+			if (!jumping) {
+				camera.position = Vector3Add(camera.position, Vector3Scale(right, moveSpeed));
+				camera.target = Vector3Add(camera.target, Vector3Scale(right, moveSpeed));
 
-			arrowPosition = Vector3Add(arrowPosition, Vector3Scale(right, moveSpeed));
-
+				arrowPosition = Vector3Add(arrowPosition, Vector3Scale(right, moveSpeed));
+			}
 		}
 
+		// This allows the arrow to travel
+		if (trackArrowBool) {
+			bow.trackArrow(yaw);
+			if (bow.arrowDest.y <= -4) {
+				bow.arrowDest = { 0.0f, 0.0f };
+				bow.time = 0.0f;
+				trackArrowBool = false;
+			}
+		}
+		// ----------------Arrow Logic----------------------
+		float arrowSpeed = 4.f;
+		arrowPosition.x += bow.arrowDest.x / arrowSpeed;
+		arrowPosition.y += bow.arrowDest.y / arrowSpeed;
+		arrowPosition.z += bow.arrowDest.z / arrowSpeed;
 
-		// This visualizes the arrow path
-		arrowPosition.x += bow.arrowDest.x / 2;
-		arrowPosition.y += bow.arrowDest.y / 2;
-		arrowPosition.z += bow.arrowDest.z / 2;
+		float distance = Vector3Distance(bow.rayEnd, enemy.position);
+		std::cout << distance << std::endl;
 
+		if (distance < 1.f && !enemyIsHit) {
+			enemyIsHit = true;
+		}
+		else {
+			enemyIsHit = false;
+		}
 
+		if (enemyIsHit) {
+			std::cout << "Enemy Hit: " << score << std::endl;
+			enemyIsHit = false;
+			score += 1;
+		}
+		// -------------------------------------------------
 
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
-		BeginMode3D(camera);
+		//Draw GUI here
+		DrawRectangle(300, 300 - bow.displacement * 100.f, 25, (bow.displacement * 100.f), GREEN);
 
+
+		BeginMode3D(camera);
+		// Draw 3D elements here
+		 
+		enemy.draw(camera.position);
 
 		DrawLine3D(ray.position, endPoint, RED);
-		DrawCube(arrowPosition, 0.2f, 0.2f, 0.2f, RED);
+		DrawCube(arrowPosition, 0.1f, 0.1f, 0.1f, RED);
 		DrawGrid(100, 10);
-
 
 
 		EndMode3D();
 
 	
 		if (debugEnabled) {
-
-
 
 			DrawText(TextFormat("Debug Enabled"), screenWidth / 2 - 25, 10, 20, BLACK);
 
@@ -303,14 +330,6 @@ int main() {
 			DrawText(TextFormat("Z: %.2f", camera.position.z), screenWidth - 100, 50, 20, BLACK);
 
 		}
-	
-
-		/*
-				std::cout << std::fixed << std::setprecision(2);
-				std::cout << "Time (s): " << time
-					<< "\tDistance (m): " << arrowDest.x
-					<< "\tHeight (m): " << arrowDest.y << "\n";
-		*/
 
 
 		EndDrawing();

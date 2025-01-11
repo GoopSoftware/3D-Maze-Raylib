@@ -38,13 +38,27 @@ void Bow::trackArrow(float yawRadians) {
 	arrowDest.y += v_y * timeStep;
 	arrowDest.z += v_z * timeStep;
 
+	Vector3 rayStart = arrowDest;
+	Vector3 rayDirection = {
+		v_x,
+		v_y,
+		v_z
+	};
 
+	rayEnd = Vector3Add(rayStart, Vector3Scale(Vector3Normalize(rayDirection), 40.f));
+
+
+	DrawLine3D(rayStart, rayEnd, RED);
+
+	std::cout << "RAYSTART: " << rayStart.z << " RayEnd: " << rayEnd.z << std::endl;
+
+	/*
 	std::cout << std::fixed << std::setprecision(2);
 	std::cout << "Time (s): " << time
 		<< "\tX Dist: " << arrowDest.x
 		<< "\tY Dist: " << arrowDest.y
 		<< "\tZ Dist: " << arrowDest.z << "\n";
-	
+	*/
 
 
 	time += timeStep;
