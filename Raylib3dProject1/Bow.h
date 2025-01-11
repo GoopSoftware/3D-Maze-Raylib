@@ -32,8 +32,15 @@ public:
 	float horizontal{};
 	float vertical{};
 
+
+	float angleRadians = angleDegrees * PI / 180.f;
+	float v_x;
+	float v_z;
+	float v_y;
+
 	Vector3 arrowDest{};
 	Vector3 bowDest{};
+	Vector3 rayStart{ };
 	Vector3 rayEnd{};
 
 	float bowElasticPotential() {return elasticPotential = 0.5f * (stiffness * std::pow(displacement, 2));}

@@ -26,9 +26,9 @@ void Bow::trackArrow(float yawRadians) {
 
 	initialVelocity = velocity;
 
-	float v_x = initialVelocity * cos(angleRadians) * sin(yawRadians); // X uses sin
-	float v_z = initialVelocity * cos(angleRadians) * cos(yawRadians); // Z uses cos
-	float v_y = initialVelocity * sin(angleRadians) - gravity * time;
+	v_x = initialVelocity * cos(angleRadians) * sin(yawRadians); // X uses sin
+	v_z = initialVelocity * cos(angleRadians) * cos(yawRadians); // Z uses cos
+	v_y = initialVelocity * sin(angleRadians) - gravity * time;
 
 	//std::cout << "INITVEL: " << initialVelocity << " GRAV: " << gravity << " TIME: " << time << std::endl;
 	//std::cout << "VX: " << v_x << " VY: " << v_y << std::endl;
@@ -38,27 +38,13 @@ void Bow::trackArrow(float yawRadians) {
 	arrowDest.y += v_y * timeStep;
 	arrowDest.z += v_z * timeStep;
 
-	Vector3 rayStart = arrowDest;
-	Vector3 rayDirection = {
-		v_x,
-		v_y,
-		v_z
-	};
-
-	rayEnd = Vector3Add(rayStart, Vector3Scale(Vector3Normalize(rayDirection), 40.f));
-
-
-	DrawLine3D(rayStart, rayEnd, RED);
-
-	std::cout << "RAYSTART: " << rayStart.z << " RayEnd: " << rayEnd.z << std::endl;
-
-	/*
+	
 	std::cout << std::fixed << std::setprecision(2);
 	std::cout << "Time (s): " << time
 		<< "\tX Dist: " << arrowDest.x
 		<< "\tY Dist: " << arrowDest.y
 		<< "\tZ Dist: " << arrowDest.z << "\n";
-	*/
+	
 
 
 	time += timeStep;

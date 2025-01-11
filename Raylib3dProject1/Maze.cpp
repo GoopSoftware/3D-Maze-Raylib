@@ -1,4 +1,3 @@
-/*
 #include "maze.h"
 #include "raylib.h"
 #include "raymath.h"
@@ -113,4 +112,3 @@ Vector3 Maze::findValidSpawnPosition() {
 
 	return spawnPos;
 }
-*/

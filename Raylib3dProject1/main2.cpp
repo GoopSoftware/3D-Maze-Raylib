@@ -17,21 +17,23 @@
 /*
 ToDo
 
-1. Find 3d asset for bow
-2. Find asset for arrow
-3. Apply assets to screen based on camera pos
-4. apply trackArrow values to shooting the arrow
-5. apply animation to bow
-7. move target around
-8. GUI
+- Find 3d asset for bow
+- Find asset for arrow
+- Apply assets to screen based on camera pos
+
+- apply animation to bow
+- move target around
+- GUI
 
 
 The 3d model will spawn randomly around the map, if an enemy spawns behind the player a red arrow will appear 
 on the side of the screen to steer the player. The enemy will head towards the player at increasing speed
 the player must shoot the enemy before the enemy hits the player 3 times
 
-
 */
+
+
+
 
 
 
@@ -43,7 +45,7 @@ int main() {
 	InitWindow(screenWidth, screenHeight, "3D Fun");
 
 	Player player;
-	Enemy enemy({1, 4, 10}, "assets/models/Joesama.obj", "assets/models/image0.png");
+	Enemy enemy({1, 4, 20}, "assets/models/Joesama.obj", "assets/models/image0.png");
 	Bow bow;
 	
 
@@ -57,7 +59,7 @@ int main() {
 
 
 	// GUI Variables
-	int score{};
+	float score{};
 	
 
 	float mouseSensitivity = 0.003f;
@@ -144,7 +146,7 @@ int main() {
 		Ray ray = { camera.position, {0.0f, -1.0f, 0.0f} };
 		Vector3 endPoint = Vector3Add(ray.position, Vector3Scale(ray.direction, 10.0f));
 		rayDistY = (groundY - ray.position.y) / ray.direction.y;
-		/* ------------------ Camera Debug ----------------------
+		// ------------------ Camera Debug ----------------------
 		std::cout << "endPoint: " << endPoint.y << std::endl;
 		std::cout << "Camera PosY: " << camera.position.y << std::endl;
 		std::cout << "RayDistY: " << rayDistY << std::endl;
@@ -152,7 +154,7 @@ int main() {
 		std::cout << "Jumping: " << jumping << std::endl;
 		//std::cout << "Velocity: " << velocity << std::endl;
 		std::cout << "-----------------------" << std::endl;
-		*/
+
 
 
 		//enemy.chasePlayer(camera.position, deltaTime);
@@ -213,7 +215,7 @@ int main() {
 			bow.displacement = 0.0f;
 		}
 		if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-			std::cout << "BOW FIRED" << std::endl;
+			std::cout << "------------------------------BOW FIRED-----------------------------" << std::endl;
 		
 			trackArrowBool = true;
 			bow.printResults();
@@ -263,6 +265,7 @@ int main() {
 				bow.arrowDest = { 0.0f, 0.0f };
 				bow.time = 0.0f;
 				trackArrowBool = false;
+				
 			}
 		}
 		// ----------------Arrow Logic----------------------
@@ -271,22 +274,37 @@ int main() {
 		arrowPosition.y += bow.arrowDest.y / arrowSpeed;
 		arrowPosition.z += bow.arrowDest.z / arrowSpeed;
 
-		float distance = Vector3Distance(bow.rayEnd, enemy.position);
-		std::cout << distance << std::endl;
+		Vector3 rayStart = arrowPosition;
+		Vector3 rayDirection = Vector3Normalize({
+			bow.v_x,
+			bow.v_y,
+			bow.v_z
+		});
 
-		if (distance < 1.f && !enemyIsHit) {
+		Vector3 rayEnd = Vector3Add(rayStart, Vector3Scale(rayDirection, 40.f));
+
+
+		if (trackArrowBool) {
+			std::cout << std::fixed << std::setprecision(2);
+
+			std::cout << "RSX: " << rayStart.x << " REX: " << rayEnd.x << "RSY: " << rayStart.y << " REY: " << rayEnd.y << "RSZ: " << rayStart.z << " REZ: " << rayEnd.z << std::endl;
+		}
+		
+
+		
+		float distanceToEnemy = Vector3Distance(arrowPosition, enemy.position);
+		
+		if (distanceToEnemy < 10.f && !enemyIsHit) {
 			enemyIsHit = true;
+			score += 1;
+			std::cout << "Arrow Hit: " << score << std::endl;
+			std::cout << "DIST: " << distanceToEnemy << std::endl;
 		}
 		else {
 			enemyIsHit = false;
 		}
-
-		if (enemyIsHit) {
-			std::cout << "Enemy Hit: " << score << std::endl;
-			enemyIsHit = false;
-			score += 1;
-		}
-		// -------------------------------------------------
+		
+		//-------------------------------------------------
 
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
@@ -298,6 +316,8 @@ int main() {
 		// Draw 3D elements here
 		 
 		enemy.draw(camera.position);
+		
+		DrawLine3D(rayStart, rayEnd, RED);
 
 		DrawLine3D(ray.position, endPoint, RED);
 		DrawCube(arrowPosition, 0.1f, 0.1f, 0.1f, RED);
@@ -324,6 +344,7 @@ int main() {
 			DrawText(TextFormat("Arrow X Position: %.2f meters", bow.arrowDest.x), 10, 170, 20, BLACK);
 			DrawText(TextFormat("Arrow Y Position: %.2f meters", bow.arrowDest.y), 10, 190, 20, BLACK);
 			DrawText(TextFormat("Arrow Distance: %.2f meters", bow.arrowDistance), 10, 210, 20, BLACK);
+			DrawText(TextFormat("Score: %.2f", score), 10, 230, 20, BLACK);
 
 			DrawText(TextFormat("X: %.2f", camera.position.x), screenWidth - 100, 10, 20, BLACK);
 			DrawText(TextFormat("Y: %.2f", camera.position.y), screenWidth - 100, 30, 20, BLACK);
