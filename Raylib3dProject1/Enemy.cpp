@@ -40,10 +40,14 @@ void Enemy::draw(Vector3 playerPos) {
 
 	Matrix rotation = MatrixRotateY(angle);
 	
-	DrawModelEx(model, position, { 0.0f, 1.0f, 0.0f }, angle * RAD2DEG, {scale, scale, scale }, WHITE);
+	DrawModelEx(model, position, { 0.0f, 1.0f, 0.0f }, angle * RAD2DEG, {scale, scale, scale }, enemyColor);
 
 	DrawSphereWires(position, boundingSphereRadius, 16, 16, RED);
 
+
+}
+
+void Enemy::destroyEnemy() {
 
 }
 
@@ -64,14 +68,4 @@ void Enemy::chasePlayer(Vector3 playerPos, float deltaTime) {
 		position.y -= normChaseDir.y * chaseSpeed * deltaTime;
 		position.z -= normChaseDir.z * chaseSpeed * deltaTime;
 	}
-
-	/*
-	if (CheckCollisionSpheres(enemy.position, enemy.boundingSphereRadius, player.position, 4)) {
-		Vector3 prevEnemyPos = enemy.position;
-		enemy.position = prevEnemyPos;
-
-	}
-	*/
-
-
 }

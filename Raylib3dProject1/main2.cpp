@@ -32,6 +32,13 @@ the player must shoot the enemy before the enemy hits the player 3 times
 
 */
 
+void DrawReticle(int screenWidth, int screenHeight, float size) {
+	float centerX = screenWidth / 2.0f;
+	float centerY = screenHeight / 2.0f;
+
+	DrawLine(centerX - size, centerY, centerX + size, centerY, RED);
+	DrawLine(centerX, centerY - size, centerX, centerY + size, RED);
+}
 
 int main() {
 
@@ -65,6 +72,9 @@ int main() {
 	float moveSpeed = 0.15;
 	float timeMouseHeld = 0.0f;
 	const float maxTimeHeld = 2.f;
+	float initialYawRadians;
+	float arrowSize = 0.0f;
+
 
 
 	// physics variables
@@ -80,7 +90,6 @@ int main() {
 	bool debugEnabled = false;
 	bool trackArrowBool = false;
 	bool enemyIsHit = false;
-	float arrowSize = .2f;
 
 
 
@@ -89,7 +98,6 @@ int main() {
 	SetTargetFPS(60);
 
 	while (!WindowShouldClose()) {
-
 
 		camera.position = { player.position };
 		camera.target = { player.target };
@@ -161,7 +169,7 @@ int main() {
 
 
 	
-		enemy.chasePlayer(player.position, deltaTime);
+		//enemy.chasePlayer(player.position, deltaTime);
 
 		// Press space to activate bool jump
 		if (IsKeyPressed(KEY_SPACE) && isOnGround && !jumping) {
@@ -220,7 +228,8 @@ int main() {
 		}
 		if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
 			std::cout << "------------------------------BOW FIRED-----------------------------" << std::endl;
-		
+			initialYawRadians = yaw;
+
 			trackArrowBool = true;
 			bow.printResults();
 
@@ -257,7 +266,7 @@ int main() {
 		}
 
 		// ----------------Arrow Logic----------------------
-		float arrowSpeed = 0.25f;
+		float arrowSpeed = 0.5f;
 
 		arrowPosition.x += bow.arrowDest.x * arrowSpeed;
 		arrowPosition.y += bow.arrowDest.y * arrowSpeed;
@@ -275,22 +284,32 @@ int main() {
 
 		// This Resets the arrow position
 		if (trackArrowBool) {
-			bow.trackArrow(yaw);
+			arrowSize = .2f;
+			bow.trackArrow(initialYawRadians);
 
 			if (arrowPosition.y <= 0.f) {
+				arrowSize = 0.0f;
 				bow.arrowDest = { 0.0f, 0.0f, 0.0f };
 				bow.time = 0.0f;
+				enemy.enemyColor = WHITE;
 				trackArrowBool = false;
 				//std::cout << std::fixed << std::setprecision(2);
 				//std::cout << "RSX: " << rayStart.x << " REX: " << rayEnd.x << "RSY: " << rayStart.y << " REY: " << rayEnd.y << "RSZ: " << rayStart.z << " REZ: " << rayEnd.z << std::endl;
 			}
 		}
-		
+		/*
+		if (trackArrowBool) {
+			camera.position = Vector3Lerp(camera.position, bow.arrowDest, 0.2f);
+			camera.target = bow.arrowDest;
+		}
+		*/
 
+		// Checks collisiong between arrow and enemy. Not perfect, maybe we need to cast a bigger sphere
 		if (CheckCollisionSpheres(arrowCollisionSphere, arrowRadius, enemy.position, enemy.boundingSphereRadius)) {
 			if (!enemyIsHit) {
 				if (enemy.distanceToPlayer >= enemy.minDistance) {
 					score += 1;
+					enemy.enemyColor = RED;
 					enemyIsHit = true;
 					std::cout << "Arrow Hit: " << score << std::endl;
 					std::cout << "ArrowColY: " << arrowCollisionSphere.y << std::endl;
@@ -299,9 +318,9 @@ int main() {
 			}
 		}
 		else {
+
 			enemyIsHit = false;
 		}
-
 
 		
 		//-------------------------------------------------
@@ -310,7 +329,6 @@ int main() {
 		ClearBackground(RAYWHITE);
 		//Draw GUI here
 
-		DrawRectangle(screenWidth / 2 + 150, (screenHeight / 2 + 100) - bow.displacement * 100.f, 25, (bow.displacement * 100.f), GREEN);
 
 		BeginMode3D(camera);
 		// Draw 3D elements here
@@ -321,11 +339,13 @@ int main() {
 		//DrawLine3D(ray.position, endPoint, RED);
 		//DrawSphere(enemy.position, 4.f, BLUE);
 		DrawSphere(arrowPosition, arrowSize, RED);
-		DrawGrid(100, 10);
+		DrawGrid(100, 10); 
 
 
 		EndMode3D();
-		
+		DrawReticle(screenWidth, screenHeight, 7.5f);
+		DrawRectangle(screenWidth / 2 + 150, (screenHeight / 2 + 100) - bow.displacement * 100.f, 25, (bow.displacement * 100.f), GREEN);
+
 		DrawText(TextFormat("Score: %.2f", score), 10, 10, 20, BLACK);
 
 	
@@ -333,20 +353,19 @@ int main() {
 
 			DrawText(TextFormat("Debug Enabled"), screenWidth / 2 - 25, 10, 20, BLACK);
 
-			DrawText(TextFormat("Displacement: %.2f", bow.displacement), 10, 10, 20, BLACK);
-			DrawText(TextFormat("Angle: %.2f", bow.angleDegrees), 10, 30, 20, BLACK);
-			DrawText(TextFormat("Direction: %.2f", yaw), 10, 50, 20, BLACK);
-			DrawText(TextFormat("Bow Elastic Potential: %.2f", bow.elasticPotential), 10, 70, 20, BLACK);
-			DrawText(TextFormat("Arrow Velocity: %.2f", bow.velocity), 10, 90, 20, BLACK);
-			DrawText(TextFormat("Force Required: %.2f", bow.forceRequired), 10, 110, 20, BLACK);
-			DrawText(TextFormat("Distance Arrow Traveled: %.2f", bow.arrowDistance), 10, 130, 20, BLACK);
+			DrawText(TextFormat("Displacement: %.2f", bow.displacement), 10, 30, 20, BLACK);
+			DrawText(TextFormat("Angle: %.2f", bow.angleDegrees), 10, 50, 20, BLACK);
+			DrawText(TextFormat("Direction: %.2f", yaw), 10, 70, 20, BLACK);
+			DrawText(TextFormat("Bow Elastic Potential: %.2f", bow.elasticPotential), 10, 90, 20, BLACK);
+			DrawText(TextFormat("Arrow Velocity: %.2f", bow.velocity), 10, 110, 20, BLACK);
+			DrawText(TextFormat("Force Required: %.2f", bow.forceRequired), 10, 130, 20, BLACK);
+			DrawText(TextFormat("Distance Arrow Traveled: %.2f", bow.arrowDistance), 10, 150, 20, BLACK);
 
 
-			DrawText(TextFormat("Time Step: %.2f seconds", bow.time), 10, 150, 20, BLACK);
-			DrawText(TextFormat("Arrow X Position: %.2f meters", bow.arrowDest.x), 10, 170, 20, BLACK);
-			DrawText(TextFormat("Arrow Y Position: %.2f meters", bow.arrowDest.y), 10, 190, 20, BLACK);
-			DrawText(TextFormat("Arrow Distance: %.2f meters", bow.arrowDistance), 10, 210, 20, BLACK);
-			DrawText(TextFormat("Score: %.2f", score), 10, 230, 20, BLACK);
+			DrawText(TextFormat("Time Step: %.2f seconds", bow.time), 10, 170, 20, BLACK);
+			DrawText(TextFormat("Arrow X Position: %.2f meters", bow.arrowDest.x), 10, 190, 20, BLACK);
+			DrawText(TextFormat("Arrow Y Position: %.2f meters", bow.arrowDest.y), 10, 210, 20, BLACK);
+			DrawText(TextFormat("Arrow Distance: %.2f meters", bow.arrowDistance), 10, 230, 20, BLACK);
 
 			DrawText(TextFormat("X: %.2f", player.position.x), screenWidth - 100, 10, 20, BLACK);
 			DrawText(TextFormat("Y: %.2f", player.position.y), screenWidth - 100, 30, 20, BLACK);
