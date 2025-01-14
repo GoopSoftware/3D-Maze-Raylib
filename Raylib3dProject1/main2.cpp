@@ -9,7 +9,7 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
-
+#include <vector>
 
 
 
@@ -49,7 +49,7 @@ int main() {
 	SetMousePosition(screenWidth / 2, screenHeight / 2);
 
 	Player player;
-	Enemy enemy({1, 4, 20}, "assets/models/Joesama.obj", "assets/models/image0.png");
+	Enemy enemy({1, 4, 100}, "assets/models/Joesama.obj", "assets/models/image0.png");
 	Bow bow;
 	
 
@@ -63,6 +63,8 @@ int main() {
 
 
 	// GUI Variables
+	//std::vector<Enemy> enemies;
+	//enemies.emplace_back(enemy);
 	float score{};
 	
 

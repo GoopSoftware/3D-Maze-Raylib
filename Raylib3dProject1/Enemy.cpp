@@ -42,7 +42,7 @@ void Enemy::draw(Vector3 playerPos) {
 	
 	DrawModelEx(model, position, { 0.0f, 1.0f, 0.0f }, angle * RAD2DEG, {scale, scale, scale }, enemyColor);
 
-	DrawSphereWires(position, boundingSphereRadius, 16, 16, RED);
+	//DrawSphereWires(position, boundingSphereRadius, 16, 16, RED);
 
 
 }
@@ -59,7 +59,7 @@ void Enemy::chasePlayer(Vector3 playerPos, float deltaTime) {
 	Vector3 normChaseDir = Vector3Normalize(chaseDir);
 	
 	distanceToPlayer = Vector3Distance(position, playerPos);
-	//chaseSpeed += .01f;
+	chaseSpeed += .01f;
 	
 	std::cout << "DistToPlayer: " << distanceToPlayer << std::endl;
 
