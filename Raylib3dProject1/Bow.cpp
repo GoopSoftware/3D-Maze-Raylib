@@ -38,9 +38,10 @@ void Bow::trackArrow(float yawRadians) {
 	
 	std::cout << std::fixed << std::setprecision(2);
 	std::cout << "Time (s): " << time
-		<< "\tX Dist: " << arrowDest.x
-		<< "\tY Dist: " << arrowDest.y
-		<< "\tZ Dist: " << arrowDest.z << "\n";
+			  << "\tX: " << arrowDest.x
+			  
+		<< "\tY: " << arrowDest.y
+				<< "\tZ: " << arrowDest.z << "\n";
 	
 
 	time += timeStep;

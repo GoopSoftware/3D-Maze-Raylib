@@ -68,9 +68,4 @@
       <Filter>assets\models</Filter>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="assets\models\image0.png">
-      <Filter>assets\models</Filter>
-    </Image>
-  </ItemGroup>
 </Project>

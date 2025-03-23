@@ -162,9 +162,6 @@
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="assets\models\image0.png" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
