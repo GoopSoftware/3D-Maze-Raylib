@@ -154,14 +154,6 @@
     <ClInclude Include="Maze.h" />
     <ClInclude Include="Player.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\models\Joesama.mtl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\models\Joesama.obj">
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
